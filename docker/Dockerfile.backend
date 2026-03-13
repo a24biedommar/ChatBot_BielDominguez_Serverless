@@ -1,0 +1,17 @@
+# Backend Oni-chan - Nitro API
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY backend/package*.json ./
+RUN npm ci
+
+COPY backend/ ./
+RUN npm run build
+
+ENV NITRO_HOST=0.0.0.0
+ENV NITRO_PORT=3001
+
+EXPOSE 3001
+
+CMD ["node", ".output/server/index.mjs"]

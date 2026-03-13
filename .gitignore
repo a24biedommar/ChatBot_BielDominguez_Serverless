@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+
+# Environment variables (no commitar secrets)
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+.output/
+.nuxt/
+.nitro/
+*.tsbuildinfo
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Capacitor
+android/
+ios/
+*.apk
+*.aab
+
+# PWA / Service Worker (generats)
+*sw.js
+*sw.js.map
+*workbox-*.js
+*workbox-*.js.map
+
+# Docker (opcional, si es generen volumes locals)
+.docker/
+
+# Debug
+.debug/

@@ -6,6 +6,48 @@ handoffs:
     prompt: Implement the feature specification based on the updated constitution. I want to build...
 ---
 
+## Default Principles (Quality-Focused)
+
+Quan l'usuari demani principis centrats en qualitat, testing, UX o rendiment, utilitza aquestes definicions com a base per a `[PRINCIPLE_1_NAME]` fins a `[PRINCIPLE_4_NAME]` (i ajusta la numeració si n'hi ha més).
+
+### I. Qualitat del Codi (Code Quality)
+
+- El codi ha de ser llegible, mantenible i seguir convencions del projecte.
+- MUST: Ús d’ESLint/Prettier (o equivalents) amb configuració compartida.
+- MUST: Components i funcions han de tenir una responsabilitat clara (Single Responsibility).
+- MUST: Noms descriptius per a variables, funcions i components; evitar abreviacions ambiguves.
+- MUST: Documentació JSDoc/TSDoc per a APIs públiques i composables complexos.
+- Duplicació de codi: refactoritzar abans de superar 3 repeticions del mateix patró.
+- **Estil**: Vue Composition API (`<script setup>`), PascalCase components, prefix `use` en composables. **JavaScript** (no TypeScript). Detalls a `speckit.implement.md` → Project Coding Standards.
+- **Metodologia**: Mai operadors ternaris; mai `.map`/`.filter`/`.reduce`; usar bucles `for`/`while`. Tots els llenguatges.
+- **Comentaris**: Blocs IMPORTS / VARIABLES / FUNCIONS / EXPORTS; funcions amb descripció i desglossament A, B, C...
+
+### II. Estàndards de Testing
+
+- TDD recomanat per a lògica de negoci crítica; com a mínim, tests escrits abans del merge.
+- MUST: Cada feature nova o modificació important ha de tenir tests unitaris associats.
+- MUST: Coverage mínim del 80% per a composables, utils i serveis (excloses UIs visuals).
+- Integració: tests E2E per a fluxos crítics (login, checkout, etc.).
+- Tests han de ser deterministes, ràpids i aïllats (sense side effects compartits).
+
+### III. Consistència de l’Experiència d’Usuari (UX Consistency)
+
+- MUST: Ús del sistema de disseny definit al projecte (tokens, components, icones).
+- MUST: Comportament coherent entre pantalles similars (formularis, llistats, accions).
+- Feedback visual obligatori per a accions asíncrones (loading, success, error).
+- Accesibilitat: suport bàsic de teclat, ARIA on calgui i contrast mínim WCAG 2.1 AA.
+- Responsive: disseny funcional en mòbil, tauleta i escriptori.
+
+### IV. Requisits de Rendiment
+
+- MUST: LCP < 2.5s, FID < 100ms, CLS < 0.1 (Core Web Vitals).
+- Imatges: formats moderns (WebP/AVIF), lazy loading i dimensions adequades.
+- API: paginació o infinite scroll per llistats grans; evitar càrregues massives.
+- PWA: Service Worker configurat; mode offline bàsic per a recursos crítics.
+- Bundle: code splitting per rutes; evitar dependències pesades sense justificació.
+
+---
+
 ## User Input
 
 ```text
@@ -28,6 +70,7 @@ Follow this execution flow:
 
 2. Collect/derive values for placeholders:
    - If user input (conversation) supplies a value, use it.
+   - If user requests principles for **code quality, testing standards, UX consistency, or performance**, use the definitions from the "Default Principles (Quality-Focused)" section above.
    - Otherwise infer from existing repo context (README, docs, prior constitution versions if embedded).
    - For governance dates: `RATIFICATION_DATE` is the original adoption date (if unknown ask or mark TODO), `LAST_AMENDED_DATE` is today if changes are made, otherwise keep previous.
    - `CONSTITUTION_VERSION` must increment according to semantic versioning rules:

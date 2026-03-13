@@ -11,6 +11,76 @@ handoffs:
     send: true
 ---
 
+## Project Default Tasks (Oni-chan Chatbot PWA)
+
+Quan generis `tasks.md` per al xatbot Oni-chan, utilitza aquestes tasques com a referència/plantilla. Organitza-les per milestones M1 → M2 → M3 → M4.
+
+**Estàndards de codi**: Respectar `speckit.implement.md`: **JavaScript** (no TypeScript), Composition API, PascalCase, prefix `use`, IndexedDB, Capacitor, `GEMINI_API_KEY`, sense ternaris ni `.map`/`.filter`/`.reduce` (usar bucles), blocs de comentaris IMPORTS/VARIABLES/FUNCIONS/EXPORTS, documentació de funcions amb A-B-C.
+
+### Phase 1: Setup — Project Skeleton (M1)
+
+**Purpose**: Crear especificacions agents; inicialitzar Nuxt 4.3.1 amb **JavaScript** (no TypeScript), arquitectura de capes i Capacitor per APK.
+
+- [ ] T001 Crear carpeta `agents/` a la arrel amb especificacions per cada tecnologia (conventions.md, nuxt.md, vue.md, dexie.md, supabase.md, gemini.md, tailwind.md, capacitor.md, pwa.md); respectar metodologia (sense ternaris, bucles imperatius, blocs IMPORTS/VARIABLES/FUNCIONS/EXPORTS, JSDoc A-B-C)
+- [ ] T002 Inicialitzar projecte Nuxt 4.3.1 en `./` amb JavaScript
+- [ ] T003 [P] Configurar Tailwind CSS (v4) i Lucide Vue a `nuxt.config.js`
+- [ ] T004 [P] Configurar `@vite-pwa/nuxt` (latest) — Service Worker PWA i manifest
+- [ ] T005 [P] Configurar **Capacitor** (latest) per APK: `@capacitor/core`, `@capacitor/android`
+- [ ] T006 [P] Configurar ESLint/Prettier i estàndards de codi
+- [ ] T007 Estructurar carpetes per capes: `composables/`, `components/`, `layouts/`, `pages/`, `server/`
+- [ ] T008 Crear layout base responsive a `layouts/default.vue`
+- [ ] T009 Crear `.env.example` amb variables: `GEMINI_API_KEY`, `NUXT_PUBLIC_SUPABASE_URL`, `NUXT_PUBLIC_SUPABASE_ANON_KEY`
+
+### Phase 2: Foundational — IndexedDB i Supabase (M2)
+
+**Purpose**: **IndexedDB** (Dexie.js) per blobs i metadades locals; **Supabase** per Auth i sincronització de metadades. **Prioritat**: completar abans de transcripció i xat.
+
+- [ ] T010 [P] [M2] Instal·lar `dexie` (latest); configurar IndexedDB
+- [ ] T011 [M2] Crear composable `composables/useIndexedDB.js` amb object stores `blobs`, `chat_metadata`, `messages`, `preferences`
+- [ ] T012 [M2] Implementar CRUD (get, add, put, delete) amb bucles; sense .map/.filter/.reduce
+- [ ] T013 [M2] Emmagatzematge local de blobs (imatges, àudio, fitxers) com a Blobs a IndexedDB; validació límits 24 MB/fitxer, 6 fitxers/missatge; IDs locals com a referències
+- [ ] T014 [M2] Configurar Supabase Auth anònim (`@supabase/supabase-js`); només usuari anònim; variables `NUXT_PUBLIC_SUPABASE_URL`, `NUXT_PUBLIC_SUPABASE_ANON_KEY`
+- [ ] T015 [M2] Validació de dades (Zod o manual) als payloads
+
+### Phase 3: Transcription Endpoint (M3)
+
+**Purpose**: Endpoint Nitro que rep àudio (Blob/FormData des del client, llegit d'IndexedDB local), el transcribe amb Gemini i retorna text.
+
+- [ ] T016 [M3] Crear API route `server/api/transcribe.post.js` (Nitro)
+- [ ] T017 [M3] Integrar transcripció: Gemini (àudio natiu); token Google AI Studio (`GEMINI_API_KEY`)
+- [ ] T018 [M3] Client envia àudio com a Blob/FormData (llegit des d'IndexedDB local); no Supabase Storage
+- [ ] T019 [M3] Incloure prompt de personalitat (Otaku/Gitano) al flux de transcripció
+- [ ] T020 [M3] Retornar transcripció i metadades amb validació Zod
+
+### Phase 4: Chat Interface amb selector Otaku/Gitano (M4)
+
+**Purpose**: Interfície de xat multimodal amb múltiples xats (crear/llistar/canviar), selector Otaku/Gitano, galeria per xat, UX per fitxers pesats. Transcripció: mostrar error si falla; botó actiu per reintentar.
+
+- [ ] T021 [M4] Crear pàgina principal: xat buit per defecte; botó esquerra → menú lateral (historial, crear nou, eliminar amb paperera) `pages/index.vue`
+- [ ] T022 [M4] **Dropdown personalitat** adalt dreta: triar **Otaku** o **Gitano** (global)
+- [ ] T023 [M4] Crear composable `composables/usePersonality.js` amb system prompts: Otaku i Gitano (speckit.specify.md)
+- [ ] T024 [M4] Implementar component de llista de missatges `components/chat/ChatMessageList.vue` per xat actiu; missatges referencien fitxers per ID local; validació 6 fitxers màxim per missatge
+- [ ] T025 [M4] Implementar input multimodal `components/chat/ChatInput.vue` (text il·limitat, imatge, àudio); validació 24 MB/fitxer, 6 fitxers/missatge; blobs a IndexedDB
+- [ ] T026 [M4] Implementar grabació i notes de veu: Blob → IndexedDB → transcripció; si falla (offline, error API), mostrar missatge i mantenir botó per reintentar
+- [ ] T027 [M4] Integrar chatbot Gemini a `server/api/chat.post.js` (Nitro); visió per imatges (Blob des del client)
+- [ ] T028 [M4] Injectar personalitat triada (Otaku/Gitano) a cada petició; rebre `personality` del client
+- [ ] T029 [M4] Galeria per xat: llistar IDs de mitjans; carregar imatges des d'IndexedDB (Object URLs)
+- [ ] T028b [M4] Títol xat: generar per IA (resum primer intercanvi); editable per l'usuari
+- [ ] T030 [M4] Persistir historial i preferència a **IndexedDB** (`chat_metadata`, `messages`, `blobs`, `preferences`); sincronitzar metadades a Supabase quan online
+- [ ] T031 [M4] UX fitxers pesats: lazy thumbnails, Blob URLs temporals, evitar bloquejar main thread; notificacions PWA i mode offline
+
+### Phase 5: Polish & Cross-Cutting
+
+**Purpose**: Documentació, rendiment i seguretat.
+
+- [ ] T032 [P] Documentar API i composables a `docs/`
+- [ ] T033 Validar Core Web Vitals i optimitzar assets
+- [ ] T034 Revisar seguretat de dades locals (IndexedDB per dispositiu); Supabase Auth no exposa secrets
+- [ ] T035 Build APK amb Capacitor: `npx cap add android`, `npx cap sync`, generar APK des d'Android Studio
+- [ ] T036 Executar validació de `quickstart.md` (si existeix)
+
+---
+
 ## User Input
 
 ```text
@@ -63,7 +133,8 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Note: Not all projects have all documents. Generate tasks based on what's available.
 
 3. **Execute task generation workflow**:
-   - Load plan.md and extract tech stack, libraries, project structure
+   - If plan.md/spec.md are missing or sparse, use **Project Default Tasks** above as base template
+   - Load plan.md and extract tech stack, libraries, project structure, milestones (M1–M4)
    - Load spec.md and extract user stories with their priorities (P1, P2, P3, etc.)
    - If data-model.md exists: Extract entities and map to user stories
    - If contracts/ exists: Map interface contracts to user stories

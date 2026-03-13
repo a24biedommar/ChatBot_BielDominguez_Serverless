@@ -6,6 +6,46 @@ handoffs:
     prompt: Create a plan for the spec. I am building with...
 ---
 
+## Project Context (Oni-chan Chatbot PWA)
+
+Quan facis el scan d'ambigüitats i generis preguntes de clarificació, utilitza aquest context per evitar preguntes ja resoltes pels artifacts del projecte. **No preguntis** sobre aspectes ja definits aquí.
+
+### Context d'aplicació (speckit.specify.md)
+
+- **App**: Xatbot multimodal PWA per mòbils; pujada il·limitada de fitxers i imatges; transcripció de notes de veu.
+- **personalitats**: **Otaku (Oni-chan)** i **Gitano (Primo)** — selector visible; cada una amb llenguatge i gerga definits.
+- **Arquitectura de dades**: IndexedDB (Dexie.js/localForage, decisió a research.md) per blobs; Supabase només Auth anònim + metadades. App totalment offline.
+- **Auth**: Només usuari anònim; sense registre ni login.
+- **Límits**: 24 MB per fitxer, 6 fitxers per missatge; text il·limitat.
+- **Múltiples xats**: Crear nou, llistar, canviar entre xats.
+- **Transcripció offline**: Mantenir botó; mostrar error si falla; possibilitat de reintentar.
+- **Variables d'entorn**: `GEMINI_API_KEY`, `NUXT_PUBLIC_SUPABASE_URL`, `NUXT_PUBLIC_SUPABASE_ANON_KEY`.
+- **Coherència**: Xat → IDs locals; transcripció → Blob des del client; galeria → imatges des d'IndexedDB.
+
+### Constraints tècnics (speckit.constitution.md, speckit.implement.md)
+
+- **Stack**: Nuxt 4.3.1, JavaScript (no TypeScript), IndexedDB, Supabase (Auth + metadades), Capacitor, Gemini.
+- **Convencions**: Sense ternaris; sense `.map`/`.filter`/`.reduce`; bucles imperatius; blocs IMPORTS/VARIABLES/FUNCIONS/EXPORTS; JSDoc amb A-B-C.
+- **IA**: Google Gemini; token a Google AI Studio; clau només al servidor.
+- **Qualitat**: ESLint/Prettier; Core Web Vitals (LCP < 2.5s, FID < 100ms, CLS < 0.1); tests E2E per fluxos crítics.
+
+### Milestones i fases (speckit.plan.md, speckit.tasks.md)
+
+| Fase | Contingut |
+|------|-----------|
+| **M1** | Setup Nuxt 4.3.1, Tailwind, PWA, Capacitor |
+| **M2** | IndexedDB (stores `blobs`, `chat_metadata`, `preferences`); Supabase Auth |
+| **M3** | Endpoint transcripció; Blob des del client |
+| **M4** | Chat UI, selector Otaku/Gitano, galeria, persistència |
+
+### Priorització de clarificacions
+
+- **No clarificar**: Stack, arquitectura de dades, personalitats, variables d'entorn, convencions de codi, ordre de milestones, Auth (anònim), límits fitxers (24 MB, 6/missatge), formats (JPEG/PNG/WebP/GIF, MP3/WAV/WebM/OGG), múltiples xats, menú lateral, dropdown personalitat, títol xat (IA + editable), eliminar xat (paperera), transcripció (error + reintentar), IndexedDB (Dexie.js), store messages separat.
+- **Prioritzar clarificacions** sobre: límits funcionals nous (p. ex. màxim fitxers per missatge), comportament offline en escenaris edge, integracions no documentades, criteris d'acceptació vagos.
+- **Referència**: Si el spec menciona «l'app», «el projecte» o funcionalitats del xatbot, assumir el context d'aquest document.
+
+---
+
 ## User Input
 
 ```text

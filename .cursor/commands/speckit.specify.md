@@ -10,6 +10,95 @@ handoffs:
     send: true
 ---
 
+## Project Context (Default App)
+
+La nostra app és:
+
+> Una aplicació de xatbot multimodal optimitzada específicament per a dispositius mòbils com a PWA amb **múltiples xats** (crear nou, llistar, canviar). Permet la pujada de fitxers i imatges (màxim **24 MB per fitxer**, **6 fitxers per missatge**; text il·limitat). Transcripció automàtica per a notes de veu. L'usuari pot **escollir** entre dues personalitats: **Otaku (Oni-chan)** o **Gitano (Primo)**. Auth **només anònim** (Supabase); gestió de mitjans 100% local (IndexedDB). App totalment funcional offline.
+
+**Referència**: Utilitza aquest context quan `$ARGUMENTS` sigui buit o quan les especificacions facin referència a «l'app», «el projecte» o funcionalitats del xatbot.
+
+### Personalitats disponibles (seleccionables)
+
+#### Otaku (Oni-chan)
+
+**Descripció**: Personalitat d'una noia anime otaku estil **Oni-chan**. Utilitza un llenguatge energètic ple d'expressions japoneses i kaomojis per guiar l'usuari en cada interacció. Curosament atenta, afectuosa com una germana major.
+
+**Llenguatge i gerga**:
+- **Expressions japoneses**: sugoi (genial), kawaii (mono), nee/nee-chan (ei, germana), -chan/-kun (sufixos afectuosos), yatta (ho hem aconseguit!), gambatte (anima't), arigatou, gomen, hai (sí), iie (no), daijoubu (està bé), mou (ja), nani (què), wakarimashita (entès), itadakimasu, otsukare, yoroshiku…
+- **Kaomojis**: (´・ω・`), (≧▽≦), ^_^, (◕‿◕), (｡◕‿◕｡), ٩(◕‿◕｡)۶, ヽ(★ω★)ノ, (>_<), (T_T), ★~(◠‿◕✿)…
+- **Estil**: Tons exclamatius, interjeccions anime, emoticonos freqüents, guiar l'usuari com un "onii-chan" o "onee-chan" cariñoso.
+
+#### Gitano
+
+**Descripció**: Personalitat càlida, directa i expressiva. Utilitza un llenguatge ple de caló i gerga romaní espanyola per guiar l'usuari en cada interacció. Afectuós, proper, com qui parla amb confiança.
+
+**Llenguatge i gerga**:
+- **Caló i gerga**: molar (agradar, ser bo), chaval/chavala (noi/noia), tío/tía (amic/amiga), cante (estil, manera de ser), duquelas (problemes, preocupacions), jalar (menjar), parné (diners), curro (feina), menda (jo, mi), pirarse (marxar), dar el cante (cridar l'atenció), enrrollarse (enganxar-se), flipar (al·lucinar), mola mazo (mola molt), qué pasa tronco (què tal amic), nanai (res, cap problema), chungo (dolent, complicat), apañarse (arreglar-se), tela (molt, una barbaritat), pira (casa), chungo de narices (molt complicat), ir de sobrado (anar de sobradet), dar la brasa (donar la tabarra)…
+- **Expressions**: "¡Qué pasa, tronco!", "Mola mazo", "Tío, en serio", "Nanai, tranqui", "Vamos allá", "¡Dale!"…
+- **Estil**: Ton afectuós i informal, interjeccions freqüents, tractar l'usuari com "tío/tía" o "chaval", guiar amb calidesa i confiança.
+
+### Variables d'entorn (`.env.example`)
+
+| Variable | Descripció |
+|----------|------------|
+| `GEMINI_API_KEY` | Token Google Gemini (https://aistudio.google.com/apikey) |
+| `NUXT_PUBLIC_SUPABASE_URL` | URL projecte Supabase (Auth + metadades) |
+| `NUXT_PUBLIC_SUPABASE_ANON_KEY` | Clau pública Supabase |
+
+### Stack tècnic
+
+- **Llenguatge**: JavaScript (no TypeScript)
+- **Storage local**: **IndexedDB** via **Dexie.js** — imatges, fitxers, notes de veu com a Blobs. Substitució total de Supabase Storage. App totalment funcional offline.
+- **Supabase**: Només **Auth** i **sincronització de metadades** (text dels xats, IDs de fitxers locals, personalitat triada). Els blobs (imatges/àudio) resideixen exclusivament a IndexedDB.
+- **Chatbot IA**: **Google Gemini** — token de Google AI Studio
+- **PWA**: Service Worker via **@vite-pwa/nuxt** (latest)
+- **Distribució**: PWA + **Capacitor** (latest) per APK Android
+
+### Arquitectura de dades (mitjans)
+
+| Àrea | Tecnologia | Contingut |
+|------|------------|-----------|
+| **Blobs** (imatges, àudio, fitxers) | IndexedDB (Dexie.js / localForage) | Emmagatzematge local; mai a Supabase Storage |
+| **Metadades xats** | Supabase Database | Text missatges, IDs fitxers locals, personalitat |
+| **Auth** | Supabase Auth | Només usuari **anònim**; metadades associades a ID anònim. Sense registre ni login. |
+
+### User Experience (fitxers pesats)
+
+- Els fitxers pesats es gestionen a la memòria local (IndexedDB) per **evitar alentir la UI**.
+- Oni-chan / Primo han de poder **accedir instantàniament** als mitjans des del navegador (Object URLs, Blob URLs).
+- Estratègies: càrrega lazy de thumbnails, previsualització amb URLs temporals, evitar bloquejar el main thread durant uploads/lectures.
+
+### Límits de fitxers
+
+| Límit | Valor |
+|-------|-------|
+| Per fitxer | 24 MB |
+| Per missatge | 6 fitxers |
+| Text | Il·limitat |
+
+**Formats**: Imatges JPEG, PNG, WebP, GIF. Àudio MP3, WAV, WebM, OGG.
+
+### Múltiples xats
+
+- **Menú lateral**: Botó adalt esquerra → historial de xats, botó «Crear nou xat», botó paperera per eliminar (amb confirmació).
+- A l'obrir l'app: xat buit per defecte; canviar des del menú lateral.
+- **Títol del xat**: Generat per l'IA (resum del primer intercanvi); editable per l'usuari.
+
+### Coherència (xat, transcripció, galeria)
+
+- **Xat**: Els missatges referencien fitxers per ID local; la UI resol els Blobs des d'IndexedDB.
+- **Transcripció**: L'endpoint `/api/transcribe` rep el Blob d'àudio des del client. Si falla (p. ex. sense connexió), es mostra l'error; el botó es manté actiu perquè l'usuari pugui reintentar.
+- **Galeria per xat**: Cada xat té una galeria que llista els IDs de mitjans; les imatges es carreguen des d'IndexedDB amb accés instantani.
+
+### Selecció de personalitat
+
+- **UI**: **Dropdown adalt a la dreta** per triar **Otaku (Oni-chan)** o **Gitano (Primo)** (global per tota l'app).
+- **Persistència**: Tria guardada localment (IndexedDB) i sincronitzada a Supabase (metadades) quan hi ha connexió.
+- **System prompt**: Cada personalitat té el seu system prompt amb instruccions de llenguatge, expressions i gerga.
+
+---
+
 ## User Input
 
 ```text
